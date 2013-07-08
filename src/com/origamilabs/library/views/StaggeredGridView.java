@@ -220,6 +220,11 @@ public class StaggeredGridView extends ViewGroup {
     OnItemLongClickListener mOnItemLongClickListener;
     
     /**
+     * The listener that receives notifications when scroll ends.
+     */
+    EndlessScrollListener mEndlessScrollListener;
+    
+    /**
      * The last CheckForLongPress runnable we posted, if any
      */
     private CheckForLongPress mPendingCheckForLongPress;
@@ -664,6 +669,12 @@ public class StaggeredGridView extends ViewGroup {
                     (overScrollMode == ViewCompat.OVER_SCROLL_IF_CONTENT_SCROLLS && !contentFits)) {
                 if (overScrolledBy > 0) {
                     EdgeEffectCompat edge = deltaY > 0 ? mTopEdge : mBottomEdge;
+                    
+                    if(deltaY > 0)
+                    	mEndlessScrollListener.onEndScroll(0);
+                    else
+                    	mEndlessScrollListener.onEndScroll(1);
+                    	
                     edge.onPull((float) Math.abs(deltaY) / getHeight());
                     invalidate();
                 }
@@ -2106,7 +2117,7 @@ public class StaggeredGridView extends ViewGroup {
             super(in);
             firstId = in.readLong();
             position = in.readInt();
-            in.createIntArray(topOffsets);
+//            in.createIntArray(topOffsets);
             in.readTypedList(mapping, ColMap.CREATOR);
             
         }
@@ -2595,6 +2606,36 @@ public class StaggeredGridView extends ViewGroup {
          * @return true if the callback consumed the long click, false otherwise
          */
         boolean onItemLongClick(StaggeredGridView parent, View view, int position, long id);
+    }
+    
+    
+    /**
+     * Register a callback to be invoked when the scroll ends
+     *
+     * @param listener The callback that will be invoked.
+     */
+    public void setEndlessScrollListener(EndlessScrollListener listener) {
+    	mEndlessScrollListener = listener;
+    }
+
+    /**
+     * @return The callback to be invoked when the scroll ends,
+     *  or null id no callback has been set.
+     */
+    public final EndlessScrollListener getEndlessScrollListener() {
+        return mEndlessScrollListener;
+    }
+    
+    public interface EndlessScrollListener {
+
+        /**
+         * Callback method to be invoked when the scroll ends.
+         * <p>
+         *
+
+         * @param position The end position (0-Top, 1-Bottom).
+         */
+        void onEndScroll(int position);
     }
     
     /**
